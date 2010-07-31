@@ -19,4 +19,4 @@ bin/Test.exe: tests/Test.cs
 	$(CSC) $(CSCFLAGS) -lib:bin -r:VcsSharp.dll -out:"$@" $+
 
 clean:
-	rm -f bin/*.dll bin/*.exe
+	rm -rf bin
