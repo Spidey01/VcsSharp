@@ -15,6 +15,7 @@
 
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace VcsSharp {
@@ -34,6 +35,62 @@ namespace VcsSharp {
     }
 
     public abstract class Vcs {
+
+        /// Initialize a new empty repository within path.
+        ///
+        /// Example:
+        ///     @code
+        ///
+        ///         Vcs git = new Git();
+        ///         if (!git.Init("Projects/myproject.git")) {
+        ///             // handle failure to initialize repository
+        ///         }
+        ///         // use git object to manipulate repository
+        ///
+        ///     @endcode
+        ///     
+        ///
+        public abstract bool Init(string path);
+
+        /// Helper method for Vcs subclasses
+        ///
+        /// This works as a wrapper around running the given version control
+        /// systems program with the execution details most likely to be
+        /// preferred. Note that this method may throw exceptions.
+        ///
+        /// @param cmd
+        ///     The command to run, e.g. "cvs".
+        ///     If cmd is not found, expect an Exception to be thrown.
+        /// @param args
+        ///     Command line arguments for cmd, e.g. "status -l f1 f2"
+        /// @returns
+        ///     true if successful; false otherwise.
+        ///
+        protected bool run(string cmd, string args) {
+            ProcessStartInfo p = new ProcessStartInfo(cmd, args);
+
+            p.UseShellExecute = false;
+            p.CreateNoWindow = true;
+            p.ErrorDialog = false;
+            p.RedirectStandardError = true;
+            p.RedirectStandardInput = true;
+            p.RedirectStandardOutput = true;
+
+            Process proc = Process.Start(p);
+            proc.WaitForExit();
+
+#if VCSSHARP_DEBUG
+            Console.WriteLine("Running: '"+cmd+" "+args+
+                              "' generated the following output:");
+
+            string line;
+            while ((line = proc.StandardOutput.ReadLine()) != null) {
+                Console.WriteLine("\t"+line);
+            }
+#endif
+
+            return proc.ExitCode == 0 ? true : false;
+        }
     }
 
     /// Factory class for accessing an existing repository via Vcs.
