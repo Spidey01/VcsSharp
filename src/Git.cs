@@ -10,7 +10,7 @@ namespace VcsSharp {
             if (Directory.Exists(path)) {
                 return false;
             }
-            return run("git", "init -- "+path);
+            return (new Program("git", "init -- "+path)).result;
         }
     }
 }

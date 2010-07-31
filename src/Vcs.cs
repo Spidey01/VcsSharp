@@ -52,62 +52,112 @@ namespace VcsSharp {
         ///
         public abstract bool Init(string path);
 
-        /// Helper method for Vcs subclasses
-        ///
-        /// This works as a wrapper around running the given version control
-        /// systems program with the execution details most likely to be
-        /// preferred. Note that this method may throw exceptions.
-        ///
-        /// @param cmd
-        ///     The command to run, e.g. "cvs".
-        ///     If cmd is not found, expect an Exception to be thrown.
-        /// @param args
-        ///     Command line arguments for cmd, e.g. "status -l f1 f2"
-        /// @returns
-        ///     true if successful; false otherwise.
-        ///
-        protected bool run(string cmd, string args) {
-            ProcessStartInfo p = new ProcessStartInfo(find(cmd), args);
 
-            p.UseShellExecute = false;
-            p.CreateNoWindow = true;
-            p.ErrorDialog = false;
-            p.RedirectStandardError = true;
-            p.RedirectStandardInput = true;
-            p.RedirectStandardOutput = true;
+        /// Helper class for Vcs subclasses
+        ///
+        /// It basically allows you an easy way to run an external program
+        /// without having to write much more code than you would use at a
+        /// command prompt.  Propeterties are provided to access the result of
+        /// the command, e.g.  output, exit status, etc. See the
+        /// documentation.
+        ///
+        /// Note bene that invoking this classes constructor should be
+        /// considered a blocking event, e.g. until the program has completed
+        /// its run. The ability to delegate this to a later time might be
+        /// added later. I don't see a need for it. If you need it before I
+        /// find a reason to code it, patches are welcome ;).
+        ///
+        protected class Program {
 
-            Process proc = Process.Start(p);
-            proc.WaitForExit();
+            private Process proc;
+            private ProcessStartInfo procinfo;
+
+            ///
+            /// This works as a wrapper around running the given version
+            /// control systems program with the execution details most likely
+            /// to be preferred. Note that this method may throw exceptions.
+            ///
+            /// @param cmd
+            ///     The command to run, e.g. "cvs".  If cmd is not found,
+            ///     expect an Exception to be thrown.
+            ///
+            /// @param args
+            ///     Command line arguments for cmd, e.g. "status -l f1 f2"
+            ///
+            public Program(string cmd, string args) {
+                procinfo = new ProcessStartInfo(find(cmd), args);
+
+                procinfo.UseShellExecute = false;
+                procinfo.CreateNoWindow = true;
+                procinfo.ErrorDialog = false;
+                procinfo.RedirectStandardError = true;
+                procinfo.RedirectStandardInput = true;
+                procinfo.RedirectStandardOutput = true;
+
+                proc = Process.Start(procinfo);
+                proc.WaitForExit();
 
 #if VCSSHARP_DEBUG
-            Console.WriteLine("Running: '"+cmd+" "+args+
-                              "' generated the following output:");
+                Console.WriteLine("Running: '"+cmd+" "+args+
+                                  "' generated the following output:");
 
-            string line;
-            while ((line = proc.StandardOutput.ReadLine()) != null) {
-                Console.WriteLine("\t"+line);
-            }
+                string line;
+                while ((line = proc.StandardOutput.ReadLine()) != null) {
+                    Console.WriteLine("\t"+line);
+                }
 #endif
-
-            return proc.ExitCode == 0 ? true : false;
-        }
-
-        // Returns the full path to 'cmd', via first entry in $PATH.
-        //
-        protected string find(string cmd) {
-            string path = Environment.GetEnvironmentVariable("PATH");
-            if (path == null) {
-                goto FAIL;
             }
 
-            foreach (string p in path.Split(new Char[] { ':' })) {
-                string check = Path.Combine(p, cmd);
-                if (File.Exists(check)) {
-                    return check;
+            public string args {
+                get { return procinfo.Arguments; }
+            }
+
+            public string file {
+                get { return procinfo.FileName; }
+            }
+
+            public StreamReader stdout {
+                get { return proc.StandardOutput; }
+            }
+
+            public StreamWriter stdin {
+                get { return proc.StandardInput; }
+            }
+
+            public StreamReader stderr {
+                get { return proc.StandardError; }
+            }
+
+            public bool result {
+                get {
+                    return proc.ExitCode == 0 ? true : false;
                 }
             }
-FAIL:
-            return cmd;
+
+            /// Finds a command in the operating system search path.
+            ///
+            /// @param cmd
+            ///     The command to locate in the PATH environment variable.
+            ///
+            /// @returns
+            ///     Full path to cmd on success, or cmd on failure.
+            ///
+            protected string find(string cmd) {
+                string path = Environment.GetEnvironmentVariable("PATH");
+                if (path == null) {
+                    goto FAIL;
+                }
+
+                foreach (string p in path.Split(new Char[] { ':' })) {
+                    // TODO: handle %Pathext% on Windows.
+                    string check = Path.Combine(p, cmd);
+                    if (File.Exists(check)) {
+                        return check;
+                    }
+                }
+            FAIL:
+                return cmd;
+            }
         }
     }
 

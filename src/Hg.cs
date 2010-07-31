@@ -7,7 +7,7 @@ namespace VcsSharp {
             // Mercurial will abort with a suitable exit code if the
             // repository already exists
             //
-            return run("hg", "init -- "+path);
+            return (new Program("hg", "init -- "+path)).result;
         }
     }
 }

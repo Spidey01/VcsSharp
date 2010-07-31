@@ -7,7 +7,7 @@ namespace VcsSharp {
             // Bazaar will abort with a suitable exit code if the repository
             // already exists
             //
-            return run("bzr", "init -- "+path);
+            return (new Program("bzr", "init -- "+path)).result;
         }
     }
 }
