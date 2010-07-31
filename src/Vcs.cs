@@ -67,7 +67,7 @@ namespace VcsSharp {
         ///     true if successful; false otherwise.
         ///
         protected bool run(string cmd, string args) {
-            ProcessStartInfo p = new ProcessStartInfo(cmd, args);
+            ProcessStartInfo p = new ProcessStartInfo(find(cmd), args);
 
             p.UseShellExecute = false;
             p.CreateNoWindow = true;
@@ -90,6 +90,24 @@ namespace VcsSharp {
 #endif
 
             return proc.ExitCode == 0 ? true : false;
+        }
+
+        // Returns the full path to 'cmd', via first entry in $PATH.
+        //
+        protected string find(string cmd) {
+            string path = Environment.GetEnvironmentVariable("PATH");
+            if (path == null) {
+                goto FAIL;
+            }
+
+            foreach (string p in path.Split(new Char[] { ':' })) {
+                string check = Path.Combine(p, cmd);
+                if (File.Exists(check)) {
+                    return check;
+                }
+            }
+FAIL:
+            return cmd;
         }
     }
 
