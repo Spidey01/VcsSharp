@@ -148,13 +148,48 @@ namespace VcsSharp {
                     goto FAIL;
                 }
 
-                foreach (string p in path.Split(new Char[] { ':' })) {
-                    // TODO: handle %Pathext% on Windows.
-                    string check = Path.Combine(p, cmd);
-                    if (File.Exists(check)) {
-                        return check;
-                    }
+                // XXX System.Func<> - requires C# 3.5 or later
+                //
+                Func<string, char, string[]> split;
+                split = (s, sep) => s.Split(new Char[] { sep });
+
+                switch (Environment.OSVersion.Platform) {
+                    //
+                    // handle %PathExt% to add the extension
+                    //
+                    case PlatformID.Win32S:
+                    case PlatformID.Win32Windows:
+                    case PlatformID.Win32NT:
+                        string exts = Environment.GetEnvironmentVariable("PathExt");
+                        if (exts == null) goto FAIL;
+
+                        foreach (string e in split(exts, ';')) {
+                            foreach (string p in split(path, ';')) {
+                                string check = Path.Combine(p, cmd+e);
+                                if (File.Exists(check)) {
+                                    return check;
+                                }
+                            }
+                        }
+
+                        break;
+                    //
+                    // OS doesn't need an extension
+                    //
+                    case PlatformID.Unix:
+                    case PlatformID.MacOSX:
+                        foreach (string p in path.Split(new Char[] { ':' })) {
+                            string check = Path.Combine(p, cmd);
+                            if (File.Exists(check)) {
+                                return check;
+                            }
+                        }
+
+                        break;
+                    default:
+                        throw new NotImplementedException("OS not supported yet!");
                 }
+
             FAIL:
                 return cmd;
             }
