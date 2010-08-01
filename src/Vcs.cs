@@ -101,10 +101,16 @@ namespace VcsSharp {
                 Console.WriteLine("Running: '"+cmd+" "+args+
                                   "' generated the following output:");
 
-                string line;
-                while ((line = proc.StandardOutput.ReadLine()) != null) {
-                    Console.WriteLine("\t"+line);
-                }
+                Action<StreamReader> test = (stream) => {
+                    string line;
+                    while ((line = stream.ReadLine()) != null) {
+                        Console.WriteLine("\t"+line);
+                    }
+                };
+                Console.WriteLine("standard output:");
+                test(stdout);
+                Console.WriteLine("standard error:");
+                test(stderr);
 #endif
             }
 
