@@ -17,6 +17,19 @@ namespace VcsSharp {
             //
             return (new Program("bzr", "init -- "+path)).result;
         }
+
+        public override List<string> Branches() {
+            using (DirManager d = new DirManager(root)) {
+                var branches = new List<string>();
+                Program task = new Program("bzr", "branches");
+
+                string b;
+                while ((b = task.stdout.ReadLine()) != null) {
+                    branches.Add(b);
+                }
+                return branches;
+            }
+        }
     }
 }
 

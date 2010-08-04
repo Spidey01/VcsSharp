@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using VcsSharp;
 
 ///
@@ -53,8 +54,13 @@ class Test {
             return false;
         }
 
-        Vcs vcs = Factory.GetRepo(repo);
-        if (vcs == null) {
+        git = Factory.GetRepo(repo);
+        if (git == null) {
+            return false;
+        }
+
+        if (!(git.Branches().Count > 0)) {
+            Console.WriteLine("Git.Branches() failed");
             return false;
         }
 
@@ -70,8 +76,13 @@ class Test {
             return false;
         }
 
-        Vcs vcs = Factory.GetRepo(repo);
-        if (vcs == null) {
+        hg = Factory.GetRepo(repo);
+        if (hg == null) {
+            return false;
+        }
+
+        if (!(hg.Branches().Count > 0)) {
+            Console.WriteLine("Hg.Branches() failed");
             return false;
         }
 
@@ -86,8 +97,13 @@ class Test {
             return false;
         }
 
-        Vcs vcs = Factory.GetRepo(repo);
-        if (vcs == null) {
+        bzr = Factory.GetRepo(repo);
+        if (bzr == null) {
+            return false;
+        }
+
+        if (!(bzr.Branches().Count > 0)) {
+            Console.WriteLine("Bzr.Branches() failed");
             return false;
         }
 

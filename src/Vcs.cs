@@ -54,6 +54,12 @@ namespace VcsSharp {
         ///
         public abstract bool Init(string path);
 
+        ///
+        /// @returns
+        ///     a List enumerating all branches in the repository.
+        ///
+        public abstract List<string> Branches();
+
 
         /// Helper class for Vcs subclasses
         ///

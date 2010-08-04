@@ -17,6 +17,10 @@ namespace VcsSharp {
         public override bool Init(string path) {
             return false;
         }
+
+        public override List<string> Branches() {
+            return null;
+        }
     }
 }
 
