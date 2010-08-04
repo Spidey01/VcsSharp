@@ -36,6 +36,8 @@ namespace VcsSharp {
 
     public abstract class Vcs {
 
+        public string root { get; protected set; }
+
         /// Initialize a new empty repository within path.
         ///
         /// Example:
@@ -51,6 +53,7 @@ namespace VcsSharp {
         ///     
         ///
         public abstract bool Init(string path);
+
 
         /// Helper class for Vcs subclasses
         ///
@@ -262,15 +265,15 @@ namespace VcsSharp {
 
             switch (DetectVcsType(path)) {
                 case Type.Git:
-                    return new Git();
+                    return new Git(path);
                 case Type.Hg:
-                    return new Hg();
+                    return new Hg(path);
                 case Type.Bzr:
-                    return new Bzr();
+                    return new Bzr(path);
                 case Type.Svn:
-                    return new Svn();
+                    return new Svn(path);
                 case Type.Cvs:
-                    return new Cvs();
+                    return new Cvs(path);
                 case Type.Unknown:
                 default:
                     return null;
