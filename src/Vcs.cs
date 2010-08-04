@@ -52,7 +52,6 @@ namespace VcsSharp {
         ///
         public abstract bool Init(string path);
 
-
         /// Helper class for Vcs subclasses
         ///
         /// It basically allows you an easy way to run an external program
@@ -200,6 +199,41 @@ namespace VcsSharp {
                 return cmd;
             }
         }
+
+        /// CWD helper class for Vcs subclasses
+        ///
+        /// The C# equal to a RAII class for changing/restoring the processes
+        /// current working directory.
+        ///
+        ///
+        protected sealed class DirManager : IDisposable {
+            private string pwd;
+            private bool disposed = false;
+
+            public DirManager(string dir) {
+                pwd = Directory.GetCurrentDirectory();
+                Directory.SetCurrentDirectory(dir);
+            }
+
+            ~DirManager() {
+                Dispose(false);
+            }
+
+            public void Dispose() {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            public void Dispose(bool disposing) {
+                if (this.disposed) {
+                    return;
+                }
+
+                Directory.SetCurrentDirectory(pwd);
+                disposed = true;
+            }
+        }
+
     }
 
     /// Factory class for accessing an existing repository via Vcs.
