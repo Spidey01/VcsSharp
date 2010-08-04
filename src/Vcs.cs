@@ -311,12 +311,13 @@ namespace VcsSharp {
             // a little respect for others!
             //
             if (known == null) {
-                known = new Dictionary<string, Type>();
-                known.Add(".git", Type.Git);
-                known.Add(".hg", Type.Hg);
-                known.Add(".bzr", Type.Bzr);
-                known.Add(".svn", Type.Svn);
-                known.Add(".cvs", Type.Cvs);
+                known = new Dictionary<string, Type> {
+                    { "git", Type.Git },
+                    { ".hg", Type.Hg },
+                    { ".bzr", Type.Bzr },
+                    { ".svn", Type.Svn },
+                    { ".cvs", Type.Cvs },
+                };
             }
 
             foreach(var type in known.Keys) {
